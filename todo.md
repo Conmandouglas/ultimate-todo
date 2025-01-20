@@ -1,9 +1,8 @@
 - Make a basic, functional to do list project, practice basic database skills
 [check] backend
 [check] frontend
-[] GIT
+[check] GIT
 - Now add a log in screen, parse data, use bcrypt and add authenciation to passwords and salt them
-- Add a sign in with google button, add a new app for google and get new keys
 - Test and make sure this works, as a BONUS CHALLENGE before react:
   - Make it so each user has multiple lists, like one list has some to do's, another has others
   - This WILL be a hard challenge, but it will test my relationship skills
@@ -11,6 +10,7 @@
   - Add bootstrap, make it look nicer
   - Play around with flexbox and grid, make this look like a professional website
 - Make sure separation of concerns is in place (html, css, javascript has their own files linked respectively, and using public folder)
+- Add a sign in with google button, add a new app for google and get new keys
 
 This website uses:
 - HTMl, CSS, Javascript
@@ -26,3 +26,4 @@ For auth:
 1. study my other auth project
 2. make a new notion page and take notes
 3. use those notes, not copy paste, to add auth to this project.
+

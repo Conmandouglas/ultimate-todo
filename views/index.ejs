@@ -4,32 +4,45 @@
   <h1>
     <%= listTitle %>
   </h1>
+  <% if (username) { %>
+    <p>Logged in as: <strong><%= username %></strong></p>
+    <a href="/logout">Logout</a>
+  <% } else { %>
+    <a href="/login">Login</a> | <a href="/register">Register</a>
+  <% } %>
 </div>
 <div class="box">
   <form class="item" action="/add" method="post">
     <input type="text" name="newItem" placeholder="New Item" autocomplete="off" autofocus="true" />
     <button class="add" type="submit" name="list" value=<%=listTitle %> >+</button>
   </form>
-  <% for(let item of items){%>
-    <div class="item">
-      <form action="/delete" method="post">
-        <input type="checkbox" onchange="this.form.submit()" name="deleteItemId" value="<%= item.id %>">
-      </form>
-
-      <p id="title<%=item.id%>">
-        <%= item.title %>
-      </p>
-
-      <form class="edit" action="/edit" method="post">
-        <!-- useful for backend, hidden on front end, has value of item id -->
-        <input type="hidden" name="updatedItemId" value="<%= item.id %>">
-        <input id="input<%=item.id%>" type="text" name="updatedItemTitle" value="<%= item.title %>" autocomplete="off"
-          autofocus="true" hidden="true" />
-        <button id="done<%=item.id%>" class="edit" type="submit" hidden><img>done</button>
-      </form>
-      <button id="edit<%=item.id%>" class="edit" onclick="handler('<%=item.id%>')"><img>edit</button>
-    </div>
+  <% if (items && items.length > 0) { %>
+    <% for (let item of items) { %>
+      <div class="item">
+        <form action="/delete" method="post">
+          <input type="checkbox" onchange="this.form.submit()" name="deleteItemId" value="<%= item.id %>">
+        </form>
+  
+        <p id="title<%= item.id %>">
+          <%= item.title %>
+        </p>
+  
+        <form class="edit" action="/edit" method="post">
+          <!-- useful for backend, hidden on front end, has value of item id -->
+          <input type="hidden" name="updatedItemId" value="<%= item.id %>">
+          <input id="input<%= item.id %>" type="text" name="updatedItemTitle" value="<%= item.title %>" autocomplete="off"
+            autofocus="true" hidden="true" />
+          <button id="done<%= item.id %>" class="edit" type="submit" hidden><img>done</button>
+        </form>
+        <button id="edit<%= item.id %>" class="edit" onclick="handler('<%= item.id %>')"><img>edit</button>
+      </div>
     <% } %>
+  <% } else { %>
+    <div class="message">
+      <p>Please log in to see your items.</p>
+    </div>
+  <% } %>
+  
 </div>
 
 <script>
