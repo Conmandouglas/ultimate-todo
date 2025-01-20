@@ -1,6 +1,6 @@
 - Make a basic, functional to do list project, practice basic database skills
 [check] backend
-[] frontend
+[check] frontend
 [] GIT
 - Now add a log in screen, parse data, use bcrypt and add authenciation to passwords and salt them
 - Add a sign in with google button, add a new app for google and get new keys
