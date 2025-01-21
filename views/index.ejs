@@ -1,48 +1,86 @@
 <%- include('partials/header.ejs'); -%>
 
-<div class="box" id="heading">
+<div class="container-fluid" id="heading">
   <h1>
     <%= listTitle %>
   </h1>
   <% if (username) { %>
-    <p>Logged in as: <strong><%= username %></strong></p>
-    <a href="/logout">Logout</a>
+    <div class="row align-items-center">
+      <p class="col-auto mb-0">Logged in as: <strong><%= username %></strong></p>
+      <a class="btn btn-danger col-auto ms-2" href="/logout">Logout</a>
+    </div>
   <% } else { %>
     <a href="/login">Login</a> | <a href="/register">Register</a>
   <% } %>
 </div>
-<div class="box">
+
+<!-- List of available lists -->
+<div class="container text-center mt-5">
+  <div class="border rounded overflow-auto mx-auto" style="max-width: 80%; white-space: nowrap;">
+    <div class="d-flex justify-content-center align-items-center">
+      <% for (let l of lists) { %>
+        <div class="d-inline-block m-3">
+          <a class="btn btn-secondary w-auto" href="/list-<%= l.id %>"><%= l.name %></a>
+        </div>
+      <% } %>
+    </div>
+  </div>
+</div>
+
+
+<!-- Add New Item and Items List -->
+<div class="container-sm w-75 mx-auto border p-4 rounded mt-4">
   <form class="item" action="/add" method="post">
-    <input type="text" name="newItem" placeholder="New Item" autocomplete="off" autofocus="true" />
-    <button class="add" type="submit" name="list" value=<%=listTitle %> >+</button>
+    <input type="hidden" name="listId" value="<%= listId %>" />
+    <div class="d-flex">
+      <div class="flex-grow-1">
+        <input type="text" class="form-control mb-3" name="newItem" placeholder="New Item" autocomplete="off" autofocus="true" />
+      </div>
+      <div>
+        <button class="add btn btn-primary mb-3 ms-2" type="submit" name="list" value="<%= listTitle %>">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-lg" viewBox="0 0 16 16">
+            <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"/>
+          </svg>
+        </button>
+      </div>
+    </div>
   </form>
-  <% if (items && items.length > 0) { %>
-    <% for (let item of items) { %>
-      <div class="item">
-        <form action="/delete" method="post">
-          <input type="checkbox" onchange="this.form.submit()" name="deleteItemId" value="<%= item.id %>">
-        </form>
-  
-        <p id="title<%= item.id %>">
-          <%= item.title %>
-        </p>
-  
-        <form class="edit" action="/edit" method="post">
-          <!-- useful for backend, hidden on front end, has value of item id -->
-          <input type="hidden" name="updatedItemId" value="<%= item.id %>">
-          <input id="input<%= item.id %>" type="text" name="updatedItemTitle" value="<%= item.title %>" autocomplete="off"
-            autofocus="true" hidden="true" />
-          <button id="done<%= item.id %>" class="edit" type="submit" hidden><img>done</button>
-        </form>
-        <button id="edit<%= item.id %>" class="edit" onclick="handler('<%= item.id %>')"><img>edit</button>
+
+
+  <!-- Display Items -->
+  <div class="w-100 mt-3">
+    <% if (items && items.length > 0) { %>
+      <% for (let item of items) { %>
+        <div class="row align-items-center mb-3 shadow-sm rounded p-2">
+          <!-- Checkbox and Title -->
+          <div class="col-8 d-flex align-items-center">
+            <form action="/delete" method="post" class="me-2">
+              <input type="hidden" name="listId" value="<%= listId %>" />
+              <input type="checkbox" class="form-check-input" onchange="this.form.submit()" name="deleteItemId" value="<%= item.id %>">
+            </form>
+            <p id="title<%= item.id %>" class="mb-0 text-wrap" style="word-wrap: break-word;">
+              <%= item.title %>
+            </p>
+          </div>
+
+          <!-- Edit Button -->
+          <div class="col-4 d-flex justify-content-end">
+            <form class="edit d-inline" action="/edit" method="post">
+              <input type="hidden" name="listId" value="<%= listId %>" />
+              <input type="hidden" name="updatedItemId" value="<%= item.id %>">
+              <input id="input<%= item.id %>" type="text" name="updatedItemTitle" value="<%= item.title %>" autocomplete="off" autofocus="true" hidden="true" />
+              <button id="done<%= item.id %>" class="btn btn-success btn-sm" type="submit" hidden>Done</button>
+            </form>
+            <button id="edit<%= item.id %>" class="btn btn-warning btn-sm" onclick="handler('<%= item.id %>')">Edit</button>
+          </div>
+        </div>
+      <% } %>
+    <% } else { %>
+      <div class="alert alert-info" role="alert">
+        <p class="mb-0">No items available. Please select a different list, or log in with a different user.</p>
       </div>
     <% } %>
-  <% } else { %>
-    <div class="message">
-      <p>Please log in to see your items.</p>
-    </div>
-  <% } %>
-  
+  </div>
 </div>
 
 <script>
@@ -54,5 +92,4 @@
   }
 </script>
 
-
-  <%- include('partials/footer.ejs'); -%>
+<%- include('partials/footer.ejs'); -%>

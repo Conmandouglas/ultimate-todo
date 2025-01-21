@@ -35,38 +35,77 @@ const db = new pg.Client({
 });
 db.connect();
 
-async function checkItems(req) {
+async function checkItems(req, listId) {
   try {
     const userId = req.isAuthenticated() ? req.user.id : null; // Check if user is authenticated
     let items = [];
+    let lists = [];
 
     if (userId) {
-      // Query only if userId is valid
-      const result = await db.query('SELECT * FROM reminders WHERE userid = $1 ORDER BY id DESC;', [userId]);
-      items = result.rows || []; // Ensure items is always an array
+      // Query lists for the user
+      const result = await db.query('SELECT * FROM lists WHERE user_id = $1 ORDER BY id DESC;', [userId]);
+      lists = result.rows || []; // Ensure lists is always an array
     }
 
-    console.log(items);
-    return items; // Return empty array if userId is null or no rows are found
+    let listTitle = 'No List'; // Default list title
+    const selectedList = lists.find(l => l.id == listId); // Find the selected list by listId
+
+    if (selectedList) {
+      listTitle = selectedList.name; // Set the list title from the selected list
+      // Query reminders based on the selected list id
+      const reminderResult = await db.query('SELECT * FROM reminders WHERE listid = $1 ORDER BY id DESC', [listId]);
+      items = reminderResult.rows || []; // Ensure items is always an array
+    }
+
+    return { items, listTitle, lists }; // Return both items and listTitle
   } catch (err) {
     console.error("Error fetching reminders: " + err);
-    return []; // Return an empty array in case of an error
+    return { items: [], listTitle: 'Error' }; // Return empty array and error title in case of an error
   }
 }
 
 app.get('/', async (req, res) => {
-  const itemsList = await checkItems(req); // Pass req to checkItems
+  const userId = req.isAuthenticated() ? req.user.id : null;
+
+  if (userId) {
+    // Query lists for the user
+    const result = await db.query('SELECT * FROM lists WHERE user_id = $1 ORDER BY id DESC;', [userId]);
+    const lists = result.rows || []; // Ensure lists is always an array
+
+    if (lists.length > 0) {
+      // Redirect to the first list (e.g., /list-1)
+      res.redirect(`/list-${lists[0].id}`);
+    } else {
+      // If no lists are found, render the homepage with no lists
+      res.render('index.ejs', {
+        listTitle: 'No List',
+        items: [],
+        lists: [],
+        username: req.isAuthenticated() ? req.user.username : null,
+      });
+    }
+  } else {
+    // If not authenticated, redirect to login
+    res.redirect('/login');
+  }
+});
+
+
+app.get('/list-:listId', async (req, res) => {
+  const { listId } = req.params; // Capture the listId from the URL
+  const { items, listTitle, lists } = await checkItems(req, listId); // Pass listId to checkItems function
 
   // Check if the user is authenticated to access their username
   const username = req.isAuthenticated() ? req.user.username : null;
 
   res.render('index.ejs', {
-    listTitle: 'Today', // This can be the name of the to-do list
-    items: itemsList,
-    username: username, // Pass the username to the EJS page
+    listTitle: listTitle,  // Pass listTitle to EJS page
+    items: items,          // Pass items to EJS page
+    lists: lists,
+    username: username,    // Pass username to EJS page
+    listId: listId,
   });
 });
-
 
 app.get("/login", (req, res) => {
   res.render("login.ejs");
@@ -137,12 +176,14 @@ app.post("/register", async (req, res) => {
 
 app.post('/add', async (req, res) => {
   const item = req.body.newItem;
+  const listId = req.body.listId;
 
   try {
-    await db.query('INSERT INTO reminders (title) VALUES ($1);', [
-      item
+    await db.query('INSERT INTO reminders (title, listid) VALUES ($1, $2);', [
+      item, listId
     ]);
-    res.redirect('/');
+    console.log(listId);
+    res.redirect(`/list-${listId}`);
   } catch (err) {
     console.log(err);
   }
@@ -151,23 +192,25 @@ app.post('/add', async (req, res) => {
 app.post('/edit', async (req, res) => {
   const updatedItemId = req.body.updatedItemId;
   const updatedItemTitle = req.body.updatedItemTitle;
+  const listId = req.body.listId;
 
   try {
     await db.query('UPDATE reminders SET title = $1 WHERE id = $2;', [
       updatedItemTitle, updatedItemId
     ]);
-    res.redirect('/');
+    res.redirect(`/list-${listId}`);
   } catch (err) {
     console.log(err);
   }
 });
 
 app.post('/delete', async (req, res) => {
-  const selectedItemId = req.body.deleteItemId
+  const selectedItemId = req.body.deleteItemId;
+  const listId = req.body.listId;
 
   try {
     await db.query('DELETE FROM reminders WHERE id = $1', [selectedItemId]);
-    res.redirect('/');
+    res.redirect(`/list-${listId}`);
   } catch (err) {
     console.log(err);
   }
