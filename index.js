@@ -12,6 +12,8 @@ const port = 3000;
 const saltRounds = 10;
 env.config();
 
+app.set('view engine', 'ejs');
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
@@ -110,6 +112,21 @@ app.get('/list-:listId', async (req, res) => {
 app.get("/login", (req, res) => {
   res.render("login.ejs");
 });
+
+// Redirect to Google for authentication
+app.get('/auth/google',
+  passport.authenticate('google', { scope: ['profile', 'email'] })
+);
+
+app.get('/auth/google/callback',
+  passport.authenticate('google', { failureRedirect: '/login' }),
+  (req, res) => {
+    // Successful authentication, redirect to the homepage
+    res.redirect('/');
+  }
+);
+
+
 
 app.get("/register", (req, res) => {
   res.render("register.ejs");
@@ -215,6 +232,34 @@ app.post('/delete', async (req, res) => {
   }
 });
 
+// Route to display the Add List form
+app.get('/addlist', (req, res) => {
+  if (!req.user) {
+    return res.redirect('/login'); // Redirect if not logged in
+  }
+  res.render('addlist'); // Render the form to add a new list
+});
+
+// Route to handle the form submission (creating a new list)
+app.post('/addlist', (req, res) => {
+  const { title } = req.body;
+  const userId = req.user.id; // Assuming you store the user ID in req.user
+
+  // Insert the new list into the database
+  const query = 'INSERT INTO lists (name, user_id) VALUES ($1, $2) RETURNING id';
+  const values = [title, userId];
+
+  db.query(query, values)
+    .then(result => {
+      // After successful insertion, redirect to the main page
+      res.redirect('/');
+    })
+    .catch(err => {
+      console.error(err);
+      res.status(500).send('Error creating list');
+    });
+});
+
 passport.use(
   "local",
   new Strategy(async function verify(username, password, cb) {
@@ -245,6 +290,44 @@ passport.use(
     }
   })
 );
+
+passport.use(
+  "google",
+  new GoogleStrategy(
+    {
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: "http://localhost:3000/auth/google/callback", // Updated to match the standard callback
+      userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo",
+    },
+    async (accessToken, refreshToken, profile, cb) => {
+      try {
+        // Extract email from profile
+        const email = profile.emails[0].value;
+
+        // Check if the user exists in the database
+        const result = await db.query("SELECT * FROM users WHERE username = $1", [email]);
+
+        if (result.rows.length === 0) {
+          // Create a new user if they don't exist
+          const newUser = await db.query(
+            "INSERT INTO users (username, password) VALUES ($1, $2) RETURNING *",
+            [email, "google"]
+          );
+          return cb(null, newUser.rows[0]); // Pass the new user to the callback
+        } else {
+          // User exists, pass the user to the callback
+          return cb(null, result.rows[0]);
+        }
+      } catch (err) {
+        console.error("Error during Google OAuth:", err);
+        return cb(err); // Pass error to Passport
+      }
+    }
+  )
+);
+
+
 
 passport.serializeUser((user, cb) => {
   cb(null, user);

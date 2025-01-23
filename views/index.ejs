@@ -13,10 +13,10 @@
   <% } %>
 </div>
 
-<!-- List of available lists -->
 <div class="container text-center mt-5">
-  <div class="border rounded overflow-auto mx-auto bg-light-subtle" style="max-width: 80%; white-space: nowrap;">
-    <div class="d-flex justify-content-center align-items-center">
+  <div class="border rounded overflow-auto mx-auto bg-light-subtle" style="max-width: 80%; white-space: nowrap; position: relative; overflow-x: auto; padding-left: 20px;">
+    <!-- Add List Button positioned at the top-right of the list container -->
+    <div class="d-flex justify-content-start align-items-center" style="flex-wrap: nowrap;">
       <% for (let l of lists) { %>
         <div class="d-inline-block m-3">
           <a class="btn btn-secondary w-auto" href="/list-<%= l.id %>"><%= l.name %></a>
@@ -44,6 +44,13 @@
       </div>
     </div>
   </form>
+</div>
+
+<!-- Optional Fixed Position "Add List" Button (if you want it fixed at the right of the screen, not just within the container) -->
+<a href="/addlist" class="btn btn-success position-fixed" style="top: 10px; right: 10px; z-index: 10;">
+  Add List
+</a>
+
 
 
   <!-- Display Items -->

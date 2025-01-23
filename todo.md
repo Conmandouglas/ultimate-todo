@@ -17,11 +17,11 @@
   - Add bootstrap, make it look nicer
   - Play around with flexbox and grid, make this look like a professional website
   - Make an add list button
-[] make a row of the list items, make each one next to eachother
-[] make each to do in the middle with rounded corner paper like notepad in middle each div has a row with checkbox on left, then the title, edit is below
+[check] make a row of the list items, make each one next to eachother
+[check] make each to do in the middle with rounded corner paper like notepad in middle each div has a row with checkbox on left, then the title, edit is below
 
 - Make sure separation of concerns is in place (html, css, javascript has their own files linked respectively, and using public folder)
-- Add a sign in with google button, add a new app for google and get new keys
+[check] Add a sign in with google button, add a new app for google and get new keys
 
 This website uses:
 - HTMl, CSS, Javascript
