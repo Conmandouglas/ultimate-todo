@@ -182,7 +182,6 @@ app.post('/add', async (req, res) => {
     await db.query('INSERT INTO reminders (title, listid) VALUES ($1, $2);', [
       item, listId
     ]);
-    console.log(listId);
     res.redirect(`/list-${listId}`);
   } catch (err) {
     console.log(err);

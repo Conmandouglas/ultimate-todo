@@ -1,5 +1,4 @@
 <%- include('partials/header.ejs'); -%>
-
 <div class="container-fluid" id="heading">
   <h1>
     <%= listTitle %>
@@ -16,7 +15,7 @@
 
 <!-- List of available lists -->
 <div class="container text-center mt-5">
-  <div class="border rounded overflow-auto mx-auto" style="max-width: 80%; white-space: nowrap;">
+  <div class="border rounded overflow-auto mx-auto bg-light-subtle" style="max-width: 80%; white-space: nowrap;">
     <div class="d-flex justify-content-center align-items-center">
       <% for (let l of lists) { %>
         <div class="d-inline-block m-3">
@@ -91,5 +90,4 @@
     document.getElementById("input" + id).removeAttribute("hidden")
   }
 </script>
-
 <%- include('partials/footer.ejs'); -%>
